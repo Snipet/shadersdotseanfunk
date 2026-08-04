@@ -1,8 +1,8 @@
 <script>
-  let { params, onParam } = $props();
+  let { params, solid = false, onParam } = $props();
 </script>
 
-<aside class="params">
+<aside class="params" class:solid>
   <div class="params-title">uniforms</div>
   {#each params as value, i}
     <label class="row">
@@ -34,6 +34,12 @@
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     z-index: 20;
+  }
+
+  .params.solid {
+    background: var(--panel-solid);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 
   .params-title {

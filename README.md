@@ -18,6 +18,11 @@ Built with Svelte 5 (runes), Vite, CodeMirror 6, and raw WebGL. Fully static:
   VU meter, and a documented starter template.
 - **`u_param0..3` sliders** — sweep a knob's value or a fader's position while
   you design, without touching the code.
+- **Drag-to-turn** — drag vertically anywhere on the canvas to sweep
+  `u_param0` (hold `Shift` for fine control), so the knob preset turns like a
+  real synth knob.
+- **Solid panel toggle** — switch the floating panels from translucent to
+  opaque when you're designing bright components (remembered across visits).
 - **Book of Shaders uniforms**: `u_resolution`, `u_time`, `u_mouse` — most BoS
   examples paste straight in. GLSL ES 1.00 by default; `#version 300 es`
   fragments also work on WebGL2.
@@ -41,6 +46,7 @@ numbers in error messages match the editor exactly.
 - `Ctrl/⌘ + Enter` — compile immediately (skips the debounce)
 - `Ctrl/⌘ + S` — save to localStorage (also happens automatically)
 - `Tab` — indent (press `Esc` then `Tab` to move focus out)
+- Drag on the canvas — sweep `u_param0`; `Shift` + drag for fine control
 
 ## Development
 

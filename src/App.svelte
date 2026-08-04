@@ -6,7 +6,16 @@
   import { encodeShare, decodeShare } from './lib/share.js';
 
   const STORAGE_KEY = 'shadersdotseanfunk.code.v1';
+  const PREFS_KEY = 'shadersdotseanfunk.prefs.v1';
   const DEBOUNCE_MS = 250;
+
+  function loadPrefs() {
+    try {
+      return JSON.parse(window.localStorage.getItem(PREFS_KEY)) ?? {};
+    } catch {
+      return {};
+    }
+  }
 
   function initialCode() {
     const hash = window.location.hash;
@@ -39,6 +48,7 @@
   let hasLastGood = $state(false);
   let stats = $state({ time: 0, fps: 0, w: 0, h: 0, gl: '' });
   let showEditor = $state(true);
+  let solidPanels = $state(loadPrefs().solidPanels ?? false);
   let toast = $state('');
 
   let canvasComp = $state();
@@ -102,6 +112,19 @@
     hasLastGood = result.hasProgram;
   }
 
+  function onCanvasDrag(delta) {
+    params[0] = Math.min(1, Math.max(0, params[0] + delta));
+  }
+
+  function toggleSolid() {
+    solidPanels = !solidPanels;
+    try {
+      window.localStorage.setItem(PREFS_KEY, JSON.stringify({ solidPanels }));
+    } catch {
+      // storage unavailable — the toggle still works for this session
+    }
+  }
+
   async function exportPNG() {
     const blob = await canvasComp?.exportPNG();
     if (!blob) return;
@@ -150,6 +173,7 @@
   {params}
   {onCompile}
   onStats={(s) => (stats = s)}
+  onParamDrag={onCanvasDrag}
 />
 
 <header class="topbar">
@@ -225,6 +249,20 @@
 
     <button
       class="btn"
+      class:on={solidPanels}
+      title="Solid panel background"
+      aria-label="Solid panel background"
+      aria-pressed={solidPanels}
+      onclick={toggleSolid}
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" stroke="none" />
+      </svg>
+    </button>
+
+    <button
+      class="btn"
       class:on={showEditor}
       title="Toggle code panel"
       aria-label="Toggle code panel"
@@ -239,7 +277,7 @@
 </header>
 
 {#if showEditor}
-  <section class="editor-panel">
+  <section class="editor-panel" class:solid={solidPanels}>
     <Editor
       bind:this={editorComp}
       {code}
@@ -256,7 +294,7 @@
         <span class="dim">{stats.w}&times;{stats.h}</span>
         <span class="dim">{stats.gl}</span>
         <span class="spacer"></span>
-        <span class="hint">Ctrl/&#8984;+Enter compiles now</span>
+        <span class="hint">Ctrl/&#8984;+Enter compiles · drag canvas &#8597; = u_param0</span>
       {:else}
         <div class="err-head">
           {errors.length} error{errors.length === 1 ? '' : 's'}{hasLastGood
@@ -277,6 +315,7 @@
 {:else}
   <button
     class="chip"
+    class:solid={solidPanels}
     data-ok={errors.length === 0}
     title="Show code panel"
     onclick={() => (showEditor = true)}
@@ -291,7 +330,7 @@
   </button>
 {/if}
 
-<ParamPanel {params} onParam={(i, v) => (params[i] = v)} />
+<ParamPanel {params} solid={solidPanels} onParam={(i, v) => (params[i] = v)} />
 
 <div class="toast" class:show={toast} role="status" aria-live="polite">
   {toast}
@@ -392,6 +431,13 @@
     box-shadow: var(--shadow);
     overflow: hidden;
     z-index: 20;
+  }
+
+  .editor-panel.solid,
+  .chip.solid {
+    background: var(--panel-solid);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 
   .status {

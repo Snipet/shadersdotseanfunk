@@ -2,11 +2,16 @@
   import { onMount } from 'svelte';
   import { ShaderRenderer } from './renderer.js';
 
-  let { fragSource, playing, params, onCompile, onStats } = $props();
+  let { fragSource, playing, params, onCompile, onStats, onParamDrag } = $props();
 
   let canvas;
   let renderer = $state(null);
   let unsupported = $state(false);
+  let dragging = $state(false);
+
+  // Vertical drag = full param sweep over this many CSS pixels.
+  const DRAG_RANGE_PX = 220;
+  const FINE_FACTOR = 0.25;
 
   let time = 0;
   const mouse = { x: -1, y: -1 };
@@ -32,13 +37,31 @@
     renderer = r;
 
     const dprOf = () => Math.min(2, window.devicePixelRatio || 1);
-    const onPointer = (e) => {
+    let lastDragY = 0;
+    const onPointerMove = (e) => {
       const rect = canvas.getBoundingClientRect();
       const dpr = dprOf();
       mouse.x = (e.clientX - rect.left) * dpr;
       mouse.y = (rect.height - (e.clientY - rect.top)) * dpr;
+      if (dragging) {
+        const dy = e.clientY - lastDragY;
+        lastDragY = e.clientY;
+        if (dy !== 0) {
+          onParamDrag?.(-(dy / DRAG_RANGE_PX) * (e.shiftKey ? FINE_FACTOR : 1));
+        }
+      }
     };
-    window.addEventListener('pointermove', onPointer);
+    const onPointerDown = (e) => {
+      if (e.button !== 0) return;
+      dragging = true;
+      lastDragY = e.clientY;
+      canvas.setPointerCapture(e.pointerId);
+    };
+    const onPointerUp = () => (dragging = false);
+    window.addEventListener('pointermove', onPointerMove);
+    canvas.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('pointerup', onPointerUp);
+    window.addEventListener('pointercancel', onPointerUp);
 
     let raf = 0;
     let last = performance.now();
@@ -70,7 +93,10 @@
 
     return () => {
       cancelAnimationFrame(raf);
-      window.removeEventListener('pointermove', onPointer);
+      window.removeEventListener('pointermove', onPointerMove);
+      canvas.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('pointercancel', onPointerUp);
       r.dispose();
     };
   });
@@ -82,7 +108,7 @@
   });
 </script>
 
-<canvas bind:this={canvas} class="shader-canvas"></canvas>
+<canvas bind:this={canvas} class="shader-canvas" class:dragging></canvas>
 
 {#if unsupported}
   <div class="nogl">
@@ -98,6 +124,12 @@
     height: 100%;
     display: block;
     background: var(--bg);
+    cursor: crosshair;
+    touch-action: none;
+  }
+
+  .shader-canvas.dragging {
+    cursor: ns-resize;
   }
 
   .nogl {

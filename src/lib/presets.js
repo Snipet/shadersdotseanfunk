@@ -14,9 +14,10 @@ const STARTER = `// ── starter ───────────────
 //   u_mouse       vec2   mouse in pixels, origin bottom-left
 //   u_param0..3   float  the P0-P3 sliders (0.0 - 1.0)
 //
-// The canvas keeps showing the last good compile while you
-// type, and errors appear under the editor. Cmd/Ctrl+Enter
-// compiles immediately.
+// Dragging vertically on the canvas sweeps u_param0 (hold
+// Shift for fine control). The canvas keeps showing the last
+// good compile while you type, and errors appear under the
+// editor. Cmd/Ctrl+Enter compiles immediately.
 
 #ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
@@ -54,8 +55,9 @@ void main() {
 `;
 
 const KNOB = `// ── rotary knob ──────────────────────────────────────────
-// A synth knob with a 270° sweep. Drag the P0 slider to turn
-// it; the value arc, indicator and ticks all follow u_param0.
+// A synth knob with a 270° sweep. Drag up/down anywhere on
+// the canvas (or use the P0 slider) to turn it — the value
+// arc, indicator and ticks all follow u_param0.
 
 #ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
