@@ -1,11 +1,11 @@
 :root {
   --bg: #0a0c10;
-  --panel: rgba(12, 15, 21, 0.78);
+  --panel: rgba(12, 15, 21, 0.88);
   --panel-solid: #11141b;
   --panel-border: rgba(255, 255, 255, 0.08);
   --text: #dfe6ee;
   --text-dim: #8b95a5;
-  --text-faint: #4c5566;
+  --text-faint: #768292;
   --accent: #5eead4;
   --accent-soft: rgba(94, 234, 212, 0.16);
   --accent2: #f472b6;
@@ -82,4 +82,16 @@ input {
 
 ::selection {
   background: var(--accent-soft);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

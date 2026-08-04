@@ -101,7 +101,7 @@
   );
 
   const highlight = HighlightStyle.define([
-    { tag: t.comment, color: '#5c6773', fontStyle: 'italic' },
+    { tag: t.comment, color: '#7d8b9c', fontStyle: 'italic' },
     { tag: t.keyword, color: '#f472b6' },
     { tag: t.typeName, color: '#5eead4' },
     { tag: [t.number, t.bool], color: '#f7b96e' },

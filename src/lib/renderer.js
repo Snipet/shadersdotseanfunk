@@ -70,7 +70,10 @@ export class ShaderRenderer {
     this._onRestored = () => {
       this.lost = false;
       this._init();
-      if (this.lastSource) this.setShader(this.lastSource);
+      if (this.lastSource) {
+        const result = this.setShader(this.lastSource);
+        if (result) this.onRestoreCompile?.(result);
+      }
     };
     canvas.addEventListener('webglcontextlost', this._onLost);
     canvas.addEventListener('webglcontextrestored', this._onRestored);
@@ -105,11 +108,13 @@ export class ShaderRenderer {
   /**
    * Compile and link a fragment shader. On failure the previous program is
    * kept so the canvas keeps rendering the last good shader.
-   * Returns { ok, errors: [{ line, message }] }.
+   * Returns { ok, errors: [{ line, message }], hasProgram } — hasProgram says
+   * whether any good program exists to show — or null while the context is
+   * lost (the source is remembered and compiled on restore).
    */
   setShader(fragSource) {
-    if (!this.ok || this.lost) return { ok: false, errors: [] };
     this.lastSource = fragSource;
+    if (!this.ok || this.lost) return null;
     const gl = this.gl;
 
     const is300 = /^\s*#version\s+300\s+es/.test(fragSource);
@@ -123,6 +128,7 @@ export class ShaderRenderer {
               '#version 300 es needs WebGL2, which this browser does not provide. Use GLSL ES 1.00 (gl_FragColor).',
           },
         ],
+        hasProgram: !!this.program,
       };
     }
 
@@ -132,7 +138,7 @@ export class ShaderRenderer {
     if (!gl.getShaderParameter(frag, gl.COMPILE_STATUS)) {
       const log = gl.getShaderInfoLog(frag) || 'Unknown compile error';
       gl.deleteShader(frag);
-      return { ok: false, errors: parseShaderLog(log) };
+      return { ok: false, errors: parseShaderLog(log), hasProgram: !!this.program };
     }
 
     const program = gl.createProgram();
@@ -144,7 +150,11 @@ export class ShaderRenderer {
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
       const log = gl.getProgramInfoLog(program) || 'Link failed';
       gl.deleteProgram(program);
-      return { ok: false, errors: [{ line: 0, message: 'Link error: ' + log }] };
+      return {
+        ok: false,
+        errors: [{ line: 0, message: 'Link error: ' + log }],
+        hasProgram: !!this.program,
+      };
     }
 
     if (this.program) gl.deleteProgram(this.program);
@@ -153,7 +163,7 @@ export class ShaderRenderer {
     for (const name of UNIFORM_NAMES) {
       this.uniforms[name] = gl.getUniformLocation(program, name);
     }
-    return { ok: true, errors: [] };
+    return { ok: true, errors: [], hasProgram: true };
   }
 
   resize() {

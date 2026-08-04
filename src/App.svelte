@@ -12,6 +12,13 @@
     const hash = window.location.hash;
     if (hash.startsWith('#g=')) {
       const decoded = decodeShare(hash.slice(3));
+      // Consume the hash one-shot: if it stayed in the URL it would shadow
+      // (and eventually clobber) newer autosaved work on the next reload.
+      window.history.replaceState(
+        null,
+        '',
+        window.location.pathname + window.location.search
+      );
       if (decoded) return decoded;
     }
     try {
@@ -29,18 +36,27 @@
   let playing = $state(true);
   let params = $state([0.65, 0.5, 0.5, 0.5]);
   let errors = $state([]);
+  let hasLastGood = $state(false);
   let stats = $state({ time: 0, fps: 0, w: 0, h: 0, gl: '' });
   let showEditor = $state(true);
   let toast = $state('');
 
   let canvasComp = $state();
   let editorComp = $state();
+  let selectEl = $state();
   let debounceTimer;
   let toastTimer;
 
   const currentPresetId = $derived(
     presets.find((p) => p.code === code)?.id ?? 'custom'
   );
+
+  // The 'custom' option comes and goes, and removing a selected <option>
+  // makes the browser fall back to the first one — so drive the select's
+  // live value imperatively instead of via `selected` attributes.
+  $effect(() => {
+    if (selectEl) selectEl.value = currentPresetId;
+  });
 
   function showToast(message) {
     toast = message;
@@ -83,6 +99,7 @@
 
   function onCompile(result) {
     errors = result.errors;
+    hasLastGood = result.hasProgram;
   }
 
   async function exportPNG() {
@@ -100,11 +117,12 @@
 
   async function share() {
     const url = `${window.location.origin}${window.location.pathname}#g=${encodeShare(code)}`;
-    window.history.replaceState(null, '', url);
     try {
       await navigator.clipboard.writeText(url);
       showToast('Link copied');
     } catch {
+      // No clipboard access — pin the link in the address bar instead.
+      window.history.replaceState(null, '', url);
       showToast('Link is in the address bar');
     }
   }
@@ -149,15 +167,14 @@
       class="btn select"
       id="preset-select"
       aria-label="Load preset"
+      bind:this={selectEl}
       onchange={(e) => loadPreset(e.currentTarget.value)}
     >
       {#if currentPresetId === 'custom'}
-        <option value="custom" selected disabled>custom</option>
+        <option value="custom" disabled>custom</option>
       {/if}
       {#each presets as preset (preset.id)}
-        <option value={preset.id} selected={preset.id === currentPresetId}>
-          {preset.name}
-        </option>
+        <option value={preset.id}>{preset.name}</option>
       {/each}
     </select>
 
@@ -242,8 +259,9 @@
         <span class="hint">Ctrl/&#8984;+Enter compiles now</span>
       {:else}
         <div class="err-head">
-          {errors.length} error{errors.length === 1 ? '' : 's'} — showing last
-          good compile
+          {errors.length} error{errors.length === 1 ? '' : 's'}{hasLastGood
+            ? ' — showing last good compile'
+            : ''}
         </div>
         <div class="err-list">
           {#each errors as err, i (i)}
@@ -275,9 +293,15 @@
 
 <ParamPanel {params} onParam={(i, v) => (params[i] = v)} />
 
-{#if toast}
-  <div class="toast">{toast}</div>
-{/if}
+<div class="toast" class:show={toast} role="status" aria-live="polite">
+  {toast}
+</div>
+
+<span class="sr-only" role="status">
+  {errors.length > 0
+    ? `${errors.length} shader ${errors.length === 1 ? 'error' : 'errors'}`
+    : 'shader compiled'}
+</span>
 
 <style>
   .topbar {
@@ -490,7 +514,6 @@
     position: fixed;
     bottom: 20px;
     left: 50%;
-    transform: translateX(-50%);
     padding: 8px 16px;
     background: var(--panel-solid);
     border: 1px solid var(--panel-border);
@@ -500,21 +523,31 @@
     color: var(--accent);
     box-shadow: var(--shadow);
     z-index: 40;
-    animation: toast-in 160ms ease;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-50%) translateY(6px);
+    transition:
+      opacity 160ms ease,
+      transform 160ms ease,
+      visibility 160ms;
   }
 
-  @keyframes toast-in {
-    from {
-      opacity: 0;
-      transform: translateX(-50%) translateY(6px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
+  .toast.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
   }
 
   @media (max-width: 860px) {
+    .topbar,
+    .controls {
+      flex-wrap: wrap;
+    }
+
+    .controls {
+      justify-content: flex-end;
+    }
+
     .editor-panel {
       left: 8px;
       right: 8px;

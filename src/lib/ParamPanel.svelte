@@ -11,7 +11,7 @@
         type="range"
         min="0"
         max="1"
-        step="0.001"
+        step="0.01"
         {value}
         oninput={(e) => onParam(i, +e.currentTarget.value)}
       />
@@ -113,7 +113,7 @@
     .params {
       right: 8px;
       bottom: auto;
-      top: 54px;
+      top: 96px;
       width: 210px;
     }
   }

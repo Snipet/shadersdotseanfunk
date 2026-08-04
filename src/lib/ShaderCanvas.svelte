@@ -28,6 +28,7 @@
       unsupported = true;
       return;
     }
+    r.onRestoreCompile = (result) => onCompile?.(result);
     renderer = r;
 
     const dprOf = () => Math.min(2, window.devicePixelRatio || 1);
@@ -77,7 +78,7 @@
   $effect(() => {
     if (!renderer?.ok) return;
     const result = renderer.setShader(fragSource);
-    onCompile?.(result);
+    if (result) onCompile?.(result);
   });
 </script>
 

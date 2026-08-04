@@ -18,8 +18,10 @@ const STARTER = `// ── starter ───────────────
 // type, and errors appear under the editor. Cmd/Ctrl+Enter
 // compiles immediately.
 
-#ifdef GL_ES
+#ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
+#else
+precision mediump float;
 #endif
 
 uniform vec2 u_resolution;
@@ -55,8 +57,10 @@ const KNOB = `// ── rotary knob ──────────────�
 // A synth knob with a 270° sweep. Drag the P0 slider to turn
 // it; the value arc, indicator and ticks all follow u_param0.
 
-#ifdef GL_ES
+#ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
+#else
+precision mediump float;
 #endif
 
 uniform vec2 u_resolution;
@@ -160,8 +164,10 @@ void main() {
 const FADER = `// ── fader ────────────────────────────────────────────────
 // A vertical slider / channel fader. P0 sets the position.
 
-#ifdef GL_ES
+#ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
+#else
+precision mediump float;
 #endif
 
 uniform vec2 u_resolution;
@@ -242,8 +248,10 @@ const TOGGLE = `// ── toggle switch ─────────────�
 // A pill toggle with an indicator LED. P0 crossing 0.5 flips
 // it; the motion eases so you can preview the transition.
 
-#ifdef GL_ES
+#ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
+#else
+precision mediump float;
 #endif
 
 uniform vec2 u_resolution;
@@ -310,8 +318,10 @@ const VU_METER = `// ── VU meter ──────────────�
 // A segmented LED meter. P0 is input gain; the level bounces
 // on its own so you can watch the ballistics.
 
-#ifdef GL_ES
+#ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
+#else
+precision mediump float;
 #endif
 
 uniform vec2 u_resolution;
