@@ -1,0 +1,85 @@
+:root {
+  --bg: #0a0c10;
+  --panel: rgba(12, 15, 21, 0.78);
+  --panel-solid: #11141b;
+  --panel-border: rgba(255, 255, 255, 0.08);
+  --text: #dfe6ee;
+  --text-dim: #8b95a5;
+  --text-faint: #4c5566;
+  --accent: #5eead4;
+  --accent-soft: rgba(94, 234, 212, 0.16);
+  --accent2: #f472b6;
+  --error: #ff6b7a;
+  --ok: #34d399;
+  --mono: ui-monospace, 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas,
+    'Liberation Mono', monospace;
+  --sans: ui-sans-serif, system-ui, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --radius: 12px;
+  --shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+}
+
+#app {
+  height: 100%;
+}
+
+button,
+select,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition:
+    color 120ms ease,
+    border-color 120ms ease,
+    background 120ms ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.btn:hover {
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.btn.on {
+  color: var(--accent);
+  border-color: rgba(94, 234, 212, 0.45);
+  background: rgba(94, 234, 212, 0.08);
+}
+
+.btn svg {
+  display: block;
+}
+
+::selection {
+  background: var(--accent-soft);
+}
